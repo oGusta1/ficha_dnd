@@ -67,7 +67,7 @@ class Ficha:
         regra = self.vida_regras.get(self.classe)
         faces = regra["dado"]
         minimo = regra["min"]
-        roll = self.dado.rolar(faces)
+        roll = self.dado.rolar(faces) + self.dado.rolar(faces)
         base = max(roll, minimo)
         return max(base + self.constituicao.modificador, 1)
 
