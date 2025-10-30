@@ -58,8 +58,6 @@ class Ficha:
 
     def calculo_vida(self) -> int:
         regra = self.vida_regras.get(self.classe)
-        if not regra:
-            raise ValueError(f"Classe sem regra de vida: {self.classe}")
         faces = regra["dado"]
         minimo = regra["min"]
         roll = self.dado.rolar(faces)

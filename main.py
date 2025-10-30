@@ -1,39 +1,74 @@
 from back_end import *
 
+def escolher_opcao(prompt, opcoes):
 
-def main(self):
+    print(prompt)
+    for i, op in enumerate(opcoes, 1):
+        print(f"{i}) {op}")
+    while True:
+        escolha = input("Escolha pelo número: ").strip()
+        if escolha.isdigit() and 1 <= int(escolha) <= len(opcoes):
+            return opcoes[int(escolha) - 1]
+        print("Opção inválida, tente novamente.")
 
-    ladino = Ficha(
-        nome={self.nome}, atributo=0, classe={self.classe}, raca={self.raca},
-        forca=10, constituicao=12, destreza=16, inteligencia=14, sabedoria=10, carisma=13
+def distribuir_atributos(valores_disponiveis, nomes_atributos):
+
+    restantes = valores_disponiveis[:]
+    alocados = {}
+    print("\nDistribua os atributos usando os valores:", restantes)
+    for nome in nomes_atributos:
+        while True:
+            print(f"\nAtribuindo para {nome} | Disponíveis: {restantes}")
+            valor = input(f"Digite um valor para {nome}: ").strip()
+            if not valor.isdigit():
+                print("Digite um número inteiro.")
+                continue
+            valor = int(valor)
+            if valor not in restantes:
+                print("Valor não disponível. Escolha um da lista.")
+                continue
+            alocados[nome] = valor
+            restantes.remove(valor)
+            break
+    return alocados
+
+def main():
+    print("=== Criador de Ficha D&D ===\n")
+
+    nome = input("Nome do personagem: ").strip()
+    if not nome:
+        nome = "SemNome"
+
+    racas = ["Humano", "Elfo", "Anão", "Halfling", "Meio-Orc"]
+    raca = escolher_opcao("\nEscolha a raça:", racas)
+
+    classes = ["Ladino", "Guerreiro", "Bárbaro"]
+    classe = escolher_opcao("\nEscolha a classe:", classes)
+
+
+    pool = [15, 14, 13, 12, 10, 8]
+    ordem = ["forca", "constituicao", "destreza", "inteligencia", "sabedoria", "carisma"]
+    alocados = distribuir_atributos(pool, ordem)
+
+    ficha = Ficha(
+        nome=nome,        
+        classe=classe,
+        raca=raca,
+        forca=alocados["forca"],
+        atributo=0,
+        constituicao=alocados["constituicao"],
+        destreza=alocados["destreza"],
+        inteligencia=alocados["inteligencia"],
+        sabedoria=alocados["sabedoria"],
+        carisma=alocados["carisma"],
     )
 
-    guerreiro = Ficha(
-        nome={self.nome}, atributo=0, classe={self.classe}, raca={self.raca},
-        forca=16, constituicao=15, destreza=12, inteligencia=10, sabedoria=12, carisma=8
-    )
-
-    barbaro = Ficha(
-        nome={self.nome}, atributo=0, classe={self.classe}, raca={self.classe},
-        forca=17, constituicao=16, destreza=12, inteligencia=8, sabedoria=10, carisma=10
-    )
+    print("\n=== Ficha Gerada ===")
+    print(ficha)
 
 
-    print("=== Fichas ===")
-    print(ladino, end="\n\n")
-    print(guerreiro, end="\n\n")
-    print(barbaro, end="\n\n")
-
-
-    print("=== Iniciativas (d20 + DEX) ===")
-    print(f"{ladino.nome}: {ladino.iniciativa_rolar()}")
-    print(f"{guerreiro.nome}: {guerreiro.iniciativa_rolar()}")
-    print(f"{barbaro.nome}: {barbaro.iniciativa_rolar()}")
-
-    print("\n=== Rolagens de dano ===")
-    print("Ladino (d8 + dex):", ladino.dado.d8())
-    print("Guerreiro (d10 + for):", guerreiro.dado.d10())
-    print("Bárbaro (d12 + for):", barbaro.dado.d12())
+    input("\nPressione Enter para rolar iniciativa...")
+    print("Iniciativa:", ficha.iniciativa_rolar())
 
 if __name__ == "__main__":
     main()
