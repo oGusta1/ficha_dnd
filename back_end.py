@@ -60,10 +60,9 @@ class Ficha:
         self.vida = self.calculo_vida()
         self.vida_max = self.vida
         self.ca = self.ca_ficha()
+
         self.iniciativa = 0
 
-
-    
     def calculo_vida(self) -> int:
         regra = self.vida_regras.get(self.classe)
         faces = regra["dado"]
