@@ -39,7 +39,6 @@ class Ficha:
         self.atributo = atributo
         self.classe = classe
         self.raca = raca
-
   
         self.forca = Atributo(forca)
         self.constituicao = Atributo(constituicao)
