@@ -145,26 +145,33 @@ class Molodoy(Monstros, curar):
     def atacar(self, j: "Ficha"):
         d20 = self.dados.d20()
         total = d20 + self.bonus_ataque
-        crit  = (d20 == 20)
-        fail  = (d20 == 1)
 
-        acertou = crit or (not fail and total >= j.ca)
-        if not acertou:
+     
+        if d20 == 1:
+            return {"acerto": False, "falha_auto": True, "d20": d20, "ataque": total}
+
+    
+        crit = (d20 == 20)
+
+        if not crit and total < j.ca:
             return {"acerto": False, "d20": d20, "ataque": total}
-        
-        dados_n = 2 if crit else 1
-        dano = sum(self.dados.rolar(self.dano_faces) for _ in range(dados_n)) + self.bonus_dano
+
+        dano = self.dados.rolar(self.dano_faces) + self.bonus_dano
         dano = max(dano, 0)
+        if crit:
+            dano *= 2
+
         j.vida = max(j.vida - dano, 0)
 
-        return {"acerto": True, "critico": crit, "dano": dano, "vida_alvo": j.vida}
-    
+        return {"acerto": True, "critico": crit, "d20": d20, "ataque": total, "dano": dano, "vida_alvo": j.vida}
+
     def regenerar(self):
         cura = self.dados.d4() + self.dados.d4() + 4
         antes = self.hp
         self.hp = min(self.hp + cura, self.hp_max)
         efetiva = self.hp - antes
         return {"rolagem": cura, "curou": efetiva, "hp_atual": self.hp}
+
     
 
 
