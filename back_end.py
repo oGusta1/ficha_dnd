@@ -1,6 +1,8 @@
 import random
 from abc import ABC, abstractmethod, ABCMeta
 
+
+
 class Dados:
     def __init__(self):
         self._rng = random
@@ -8,18 +10,12 @@ class Dados:
     def rolar(self, faces: int) -> int:
         return self._rng.randint(1, faces)
 
-    def d4(self) -> int:  
-        return self.rolar(4)
-    def d6(self) -> int:  
-        return self.rolar(6)
-    def d8(self) -> int:  
-        return self.rolar(8)
-    def d10(self) -> int: 
-        return self.rolar(10)
-    def d12(self) -> int: 
-        return self.rolar(12)
-    def d20(self) -> int: 
-        return self.rolar(20)
+    def d4(self) -> int:   return self.rolar(4)
+    def d6(self) -> int:   return self.rolar(6)
+    def d8(self) -> int:   return self.rolar(8)
+    def d10(self) -> int:  return self.rolar(10)
+    def d12(self) -> int:  return self.rolar(12)
+    def d20(self) -> int:  return self.rolar(20)
 
 
 class Atributo:
@@ -46,7 +42,7 @@ class Ficha:
         self.atributo = atributo
         self.classe = classe
         self.raca = raca
-  
+
         self.forca = Atributo(forca)
         self.constituicao = Atributo(constituicao)
         self.destreza = Atributo(destreza)
@@ -56,11 +52,9 @@ class Ficha:
 
         self.dado = Dados()
 
-
         self.vida = self.calculo_vida()
         self.vida_max = self.vida
         self.ca = self.ca_ficha()
-
         self.iniciativa = 0
 
     def calculo_vida(self) -> int:
@@ -98,39 +92,34 @@ class Ficha:
         return (
             f"Nome: {r['nome']} | Raça: {r['raca']} | Classe: {r['classe']}\n"
             f"Vida: {r['vida']} | CA: {r['ca']}\n"
-            f"Força {r['forca']['pontos']} (modificador {r['forca']['modificador']}) | "
-            f"Destreza {r['destreza']['pontos']} (modificador {r['destreza']['modificador']})\n"
-            f"Constituição {r['constituicao']['pontos']} (modificador {r['constituicao']['modificador']}) | "
-            f"Inteligência {r['inteligencia']['pontos']} (modificador {r['inteligencia']['modificador']})\n"
-            f"Sabedoria {r['sabedoria']['pontos']} (modificador {r['sabedoria']['modificador']}) | "
-            f"Carisma {r['carisma']['pontos']} (modificador {r['carisma']['modificador']})"
+            f"Força {r['forca']['pontos']} (mod {r['forca']['modificador']}) | "
+            f"Destreza {r['destreza']['pontos']} (mod {r['destreza']['modificador']})\n"
+            f"Constituição {r['constituicao']['pontos']} (mod {r['constituicao']['modificador']}) | "
+            f"Inteligência {r['inteligencia']['pontos']} (mod {r['inteligencia']['modificador']})\n"
+            f"Sabedoria {r['sabedoria']['pontos']} (mod {r['sabedoria']['modificador']}) | "
+            f"Carisma {r['carisma']['pontos']} (mod {r['carisma']['modificador']})"
         )
 
-class curar(metaclass=ABCMeta):
-    def __init__(self):
-        pass
 
+class curar(ABCMeta):
+    def __init__(self): pass
     @abstractmethod
-    def regenerar(self):
-        pass
+    def regenerar(self): pass
 
-class Monstros(metaclass=ABCMeta):
-    hp : int
 
-    def __init__(self,hp,ca):
+class Monstros(ABCMeta):
+    hp: int
+    def __init__(self, hp, ca):
         self.hp = hp
         self.ca = ca
 
     @abstractmethod
-    def atacar(self,j : "Ficha"):
+    def atacar(self, j: "Ficha"):
         pass
-        
+
     def __str__(self):
-        if self.hp > 0:
-            return f"monstro com {self.hp}"
-        else:
-            return f"monstro morto!"
-    
+        return f"monstro com {self.hp}" if self.hp > 0 else "monstro morto!"
+
 
 class Molodoy(Monstros, curar):
     bonus_ataque = 4
@@ -146,11 +135,9 @@ class Molodoy(Monstros, curar):
         d20 = self.dados.d20()
         total = d20 + self.bonus_ataque
 
-     
         if d20 == 1:
             return {"acerto": False, "falha_auto": True, "d20": d20, "ataque": total}
 
-    
         crit = (d20 == 20)
 
         if not crit and total < j.ca:
@@ -172,8 +159,72 @@ class Molodoy(Monstros, curar):
         efetiva = self.hp - antes
         return {"rolagem": cura, "curou": efetiva, "hp_atual": self.hp}
 
-    
 
+
+class Jogador:
+
+
+    def __init__(self, ficha: Ficha, dados=None):
+        self.ficha = ficha
+        self.dados = dados or Dados()
+        self.hp_max = ficha.vida
+
+        if ficha.classe == "Ladino":
+            self.atributo_ataque = "destreza"
+            self.dano_faces = 6
+        elif ficha.classe == "Guerreiro":
+            self.atributo_ataque = "forca"
+            self.dano_faces = 10
+        elif ficha.classe == "Bárbaro":
+            self.atributo_ataque = "forca"
+            self.dano_faces = 12
+        else:
+            self.atributo_ataque = "forca"
+            self.dano_faces = 6
+
+    def _mod_arma(self) -> int:
+        return self.ficha.destreza.modificador if self.atributo_ataque == "destreza" else self.ficha.forca.modificador
+
+    def _bonus_ataque(self) -> int:
+        
+        return self._mod_arma()
+
+    def atacar(self, alvo: Monstros):
+        d20 = self.dados.d20()
+        total = d20 + self._bonus_ataque()
+
+        if d20 == 1:
+            return {"acerto": False, "falha_auto": True, "d20": d20, "ataque": total}
+
+        crit = (d20 == 20)
+
+        if not crit and total < alvo.ca:
+            return {"acerto": False, "d20": d20, "ataque": total}
+
+        dano_dado = self.dados.rolar(self.dano_faces)
+        dano = dano_dado + self._mod_arma()
+        if crit:
+            dano = (dano_dado * 2) + self._mod_arma()  
+
+        dano = max(dano, 0)
+        alvo.hp = max(alvo.hp - dano, 0)
+
+        return {
+            "acerto": True,
+            "critico": crit,
+            "d20": d20,
+            "ataque": total,
+            "dano": dano,
+            "hp_alvo": alvo.hp
+        }
+
+    def regenerar(self):
+        
+        cura = self.dados.d4() + self.dados.d4() + 4
+        antes = self.ficha.vida
+        self.ficha.vida = min(self.ficha.vida + cura, self.hp_max)
+        efetiva = self.ficha.vida - antes
+        return {"rolagem": cura, "curou": efetiva, "hp_atual": self.ficha.vida}
 
 
 
